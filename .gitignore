@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+# Private build state never lives in this repo; these patterns are a backstop only.
+.private/
+scratch/
+denylist*.txt
+ledger*.json
