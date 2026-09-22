@@ -1,0 +1,25 @@
+# Allowlist of publishable paths; scripts/verify.sh fails on any file not listed here.
+.github/workflows/ci.yml
+.gitignore
+CONTRIBUTING.md
+LICENSE
+MANIFEST
+ROADMAP.md
+SOURCES.md
+scripts/canonical.py
+scripts/check_lessons.py
+scripts/check_links.py
+scripts/lessons.schema.json
+scripts/render.py
+scripts/scrub_check.py
+scripts/verify.sh
+starter-kit/AGENTS.md
+starter-kit/CLAUDE.md
+starter-kit/GEMINI.md
+starter-kit/README.md
+starter-kit/agents/scout.md
+starter-kit/hooks/post-edit-lint.sh
+starter-kit/memory-conventions.md
+starter-kit/session-start-pattern.md
+starter-kit/settings.hooks.example.json
+usage-audit/README.md
