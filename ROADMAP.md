@@ -19,27 +19,34 @@ the state of the project is never a guess.
 - `scripts/`: the schema, canonical hashing, deterministic renderer, link
   checker, structural leak scanner, and the `verify.sh` gate that CI runs.
 
-## What is in the pipeline
+## The lesson corpus
 
-The lesson corpus itself. From my own session logs the pipeline produced
-1,862 candidates, merged them into 373 lessons, and an editor pass plus an
-independent second-model review cut that to 197 curated lessons across 16
-themes (10 about using coding agents, 6 general engineering). Each lesson
+Published in `lessons/lessons.json` and rendered under `lessons/` and
+`engineering-lessons/`. From my own session logs the pipeline produced
+roughly two thousand candidate lessons, merged them by incident into a few
+hundred, and an editor pass plus an independent second-model review cut that
+to about two hundred curated lessons across 16 themes (10 about using coding
+agents, 6 general engineering). Each lesson
 must clear three independent review lenses bound to a content hash, and a
 stricter fourth lens where the sources were domain-heavy, before it renders.
 
-Status at last update: 108 lessons have cleared every lens, 2 were rejected
-by the lenses (one because the vendor docs already say it, one because its
-only evidence was employer-specific configuration), and the remainder are
-mid-verification. Lessons land in `lessons/lessons.json` only after all of
-their verdicts are in, so a lesson you cannot find here has not passed yet,
+Status at last update: 151 lessons cleared every lens and are published in
+`lessons/lessons.json` and the rendered theme files. 3 were rejected by the
+lenses (one because the vendor docs already say it, two because their only
+evidence was employer-specific process detail). 10 more were cut by an
+editorial pass after they had passed review: near-duplicates of a published
+lesson, or a rule whose reach beyond the vendor docs could not be shown. 33
+are still mid-verification and are not published; they carry IDs that are
+absent from the published set and will land in a later batch once their
+remaining verdicts are in. A lesson you cannot find here has not passed yet,
 not slipped through.
 
 ## Release checklist (maintainer)
 
-In order. Every step is a script in this repo except the review agents,
-which run outside it and write their verdicts next to the private build
-state.
+In order. The schema, renderer, scanners, and gate live in this repo. The
+reducer, ID allocation, and verdict checker are private build tooling that
+reads the review verdicts; digest selection, duplicate resolution, and the
+review agents are judgment steps that run outside the repo.
 
 1. Finish verification for lessons still missing a verdict, then reduce the
    passed set into `lessons/lessons.json` (private reducer; only public
@@ -48,10 +55,12 @@ state.
    the same three lenses as a lesson, bound to their own hash.
 3. `python3 scripts/render.py` to render theme files and the README digest.
 4. Semantic duplicate pass over the rendered tree; drop or merge, re-render.
-5. `python3 scripts/make_manifest.py` equivalent: regenerate `MANIFEST`.
+5. Regenerate `MANIFEST` (an allowlist of every publishable path; the
+   generator is part of the private build tooling).
 6. `bash scripts/verify.sh` (CI mode) and `bash scripts/verify.sh --release
-   --denylist-file <private file>` (adds the private term denylist and the
-   verdict-binding check). Both must exit 0.
+   --denylist-file <denylist> --verdicts-dir <results> --ledger <ledger>`
+   (adds the private term denylist and the verdict-binding check; release
+   mode refuses to run without all three). Both must exit 0.
 7. Stranger read by a reviewer with no source context, plus a second-model
    review of the whole tree. Fix, re-render, re-verify.
 8. Update `CHANGELOG.md`, commit, push. CI runs `verify.sh` in CI mode.
@@ -70,8 +79,8 @@ state.
 
 ## Known limitations
 
-- Until the lesson batch lands, `scripts/verify.sh` fails in CI on the
-  missing `lessons/lessons.json` and digest. That is intentional: the gate
-  is honest, and the badge goes green when the content is real.
+- The 33 unpublished lessons are not hidden defects; they are entries whose
+  independent review verdicts were interrupted by usage limits during the
+  build and have not been re-run yet.
 - The private denylist and provenance ledger live outside this repo on
   purpose; CI runs every check that needs no private input.

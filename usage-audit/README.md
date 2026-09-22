@@ -39,10 +39,10 @@ days. It also runs headless, meaning you can call it non-interactively with
 a `-p` flag and pipe the output somewhere, so it can feed a scheduled job
 instead of needing you at the keyboard.
 
-`/usage` and `/context` give you live numbers: how close you are to a usage
-limit right now, and how full the current conversation's context window is
-right now. Neither is historical. Both are a snapshot of this exact moment,
-not a trend.
+`/context` gives you a live number: how full the current conversation's
+context window is right now. `/usage` mixes the current session's totals with
+your plan limits and, on recent versions, a day or week view of what your
+recent usage was attributed to. Neither replaces a month-over-month trend.
 
 Last, I run a homegrown monthly audit outside all of the above, because none
 of the built-in tools give you a month-over-month trend on their own. It
@@ -52,7 +52,7 @@ handful of repeated patterns, then counts, per distinct session rather than
 per message, how often a skill built for that pattern actually fired.
 Before counting anything, it collapses templated prompts, meaning the same
 boilerplate message issued automatically by a script, so a nightly job
-sending the same text thirty times does not get counted as thirty
+sending the same text many times does not get counted as many
 conversations with a person behind them.
 
 ## This run
@@ -91,13 +91,13 @@ conversations with a person behind them.
   as its own pattern in the data, which reads less like a considered choice
   and more like compensating turn by turn for cost or capability instead of
   deciding up front.
-- Two skills sat at zero invocations across two consecutive monthly
+- A couple of skills sat at zero invocations across two consecutive monthly
   windows. One of the two is built to be rare on purpose, since it is only
   meant to fire when the agent is visibly stuck, so zero uses there is fine.
   The other has no such excuse and is a genuine retirement candidate.
 - The subagent (a smaller, separately invoked agent instance) I use for
-  read-only reconnaissance, meaning it can look things up and report back
-  but cannot edit anything, is the single most heavily used custom artifact
+  reconnaissance, meaning it is told to look things up and report back
+  without editing anything (an instruction, not an enforced restriction), is the single most heavily used custom artifact
   I have, ahead of every skill. Handing off "go find out X and report back"
   instead of doing it myself in the main conversation pays off constantly.
 - Calls to a shell outnumber file edits by about five to one across the
@@ -118,7 +118,7 @@ The interactive `/doctor` run found real, previously invisible waste sitting
 in every single session's context: several thousand tokens spent on synced
 skill listings I had never invoked once, a plugin's MCP server that failed
 its authentication check every session without ever surfacing that fact to
-me, two connectors doing the same job, and an advisory lint hook (a script
+me, duplicate connectors doing the same job, and an advisory lint hook (a script
 that runs after every edit and prints warnings without blocking anything)
 that was taking multiple seconds per edit. It also flagged that my own
 auto-memory index, the file that carries context forward between sessions,
@@ -140,8 +140,8 @@ what went wrong, what worked well, but it samples a subset of sessions, so
 it is a trend line, not a full count. `/doctor` and `/skill-doctor` are
 precise about cost and adoption but tell you nothing about whether the
 underlying work went well. `claude doctor` only tells you the CLI itself is
-healthy, nothing about how you use it. `/usage` and `/context` are only ever
-a snapshot of right now. None of them, alone, gives you a trend across
+healthy, nothing about how you use it. `/context` is only ever a snapshot of
+right now, and `/usage` reaches back a week at most. None of them, alone, gives you a trend across
 months without somewhere to store past runs and a way to diff against them,
 which is the gap my homegrown monthly audit exists to fill.
 

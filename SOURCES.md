@@ -35,8 +35,8 @@ by a content hash (a fingerprint of the entry's text) so a later silent edit
 cannot outrun its own review, plus a stricter fourth pass for any lesson
 whose source material leaned on specifics that had to be abstracted away by
 hand rather than by a repeatable rule. Turning the schema into published
-markdown is a deterministic script, not a rewrite, so the page you read
-always matches the underlying entry byte for byte. Before anything ships it
+markdown is a deterministic script that lays the entry text out without
+editing it, so what you read is the text the reviewers saw. Before anything ships it
 passes a structural leak scanner that looks for shapes like ticket-style
 identifiers and internal-looking database names, a private denylist of
 specific terms that never gets committed to this repo, a secrets scan, a
@@ -47,7 +47,11 @@ reviewing the first model's work.
 
 - Any date more specific than a month, even inside a short sketch of an
   incident.
-- Counts: how many of anything, how often, how large.
+- Counts of anything from the source material: how many records, how often
+  something happened, how large a number was. The one quantity that survives
+  is how many independent incidents stand behind a rule, stated in the
+  lesson's confidence note, because how much evidence a rule rests on is part
+  of the rule.
 - Names: people, teams, or tools that would identify where a lesson came
   from, along with file paths and project names.
 - The incident narratives themselves. A lesson states the rule and the

@@ -54,11 +54,12 @@ have the hook check for that variable and exit immediately if it is set.
 
 ## Mirror the pattern across tools
 
-This is not specific to one agent host. Gemini CLI has its own SessionStart
-and SessionEnd hooks that can run the same kind of script. Codex does not
-have hooks in the same sense, but it reads an AGENTS.md file at the start of
-a session, so the equivalent there is keeping AGENTS.md itself current
-rather than injecting fresh context through a script.
+This is not specific to one agent host. Gemini CLI has SessionStart and
+SessionEnd hooks that can run the same kind of script, and Codex has added
+its own session hooks (check its hooks documentation for the current event
+names and payloads). Whatever the host, it also reads an AGENTS.md file at
+the start of a session, so keeping that file current is the zero-tooling
+fallback when a hook is not available.
 
 ## What actually gets injected
 
@@ -68,3 +69,24 @@ logs into durable notes, that lives separately from the raw transcripts.
 What a SessionStart hook injects is a slice of that compiled index, never the
 raw transcripts themselves. Raw logs are the input to compilation, not
 something you want a new session reading cold.
+
+## Wiring shape
+
+Each of these hooks is one entry under the `hooks` key in `settings.json`,
+with an empty matcher so it fires on every session. The scripts themselves
+are yours to write; this kit does not ship them.
+
+```json
+{
+  "hooks": {
+    "SessionStart": [{"matcher": "", "hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/session-start.py", "timeout": 15}]}],
+    "PreCompact":   [{"matcher": "", "hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/pre-compact.py", "timeout": 10}]}],
+    "SessionEnd":   [{"matcher": "", "hooks": [{"type": "command", "command": "python3 ~/.claude/hooks/session-end.py", "timeout": 10}]}]
+  }
+}
+```
+
+A SessionStart hook's plain stdout is added to the session as context, which
+is exactly what the injection pattern relies on. For most other hook events,
+plain stdout is not shown to the agent; return
+`hookSpecificOutput.additionalContext` JSON instead, as the lint hook does.

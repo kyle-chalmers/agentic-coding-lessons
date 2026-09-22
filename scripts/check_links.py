@@ -3,9 +3,9 @@
 
 Local links must resolve to an existing file, and an #anchor must match a heading in
 the target markdown file. External links are fetched with GET (10 s timeout) and
-classified: `ok`, `broken` (404, 410, unresolvable host) or `inconclusive` (timeout,
-403, 429, 5xx, connection reset). Only `broken` fails the check; `inconclusive` is
-listed for a human. `--offline` skips external links entirely.
+classified: `ok`, `broken` (HTTP 404 or 410) or `inconclusive` (timeouts, 403, 429, 5xx,
+DNS or connection failures). Only confirmed `broken` fails the check; `inconclusive` is
+listed for a human to resolve. Reference-style links, autolinks and HTML links are not parsed. `--offline` skips external links entirely.
 """
 from __future__ import annotations
 
@@ -58,10 +58,7 @@ def fetch(url: str) -> str:
     except urllib.error.HTTPError as e:
         return "broken" if e.code in (404, 410) else "inconclusive"
     except urllib.error.URLError as e:
-        reason = getattr(e, "reason", None)
-        if isinstance(reason, socket.gaierror):
-            return "broken"
-        return "inconclusive"
+        return "inconclusive"  # DNS and connection failures may be environmental; a human resolves them
     except (socket.timeout, ConnectionError, OSError):
         return "inconclusive"
 
@@ -79,7 +76,9 @@ def main() -> int:
             if target.startswith(("http://", "https://")):
                 if a.offline:
                     continue
-                status = cache.setdefault(target, fetch(target))
+                if target not in cache:
+                    cache[target] = fetch(target)
+                status = cache[target]
                 if status == "broken":
                     broken.append(f"{os.path.relpath(md, ROOT)} -> {target}")
                 elif status == "inconclusive":

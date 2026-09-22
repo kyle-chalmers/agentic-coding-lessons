@@ -52,14 +52,16 @@ against a pull request) runs the identical script in its default mode. It
 checks the file manifest, the schema, that the rendered markdown matches the
 JSON, that there are no em or en dashes anywhere in the tree, that there are
 no absolute home-directory paths, secrets, or structural leaks, and that
-every link in the repo resolves. As the maintainer, I additionally run
+there are no confirmed broken links (external links the checker cannot
+reach are listed for a human to resolve). As the maintainer, I additionally run
 
-    bash scripts/verify.sh --release --denylist-file <a private file>
+    bash scripts/verify.sh --release --denylist-file <private denylist> --verdicts-dir <private results> --ledger <private ledger>
 
-before every push. That file lists specific terms that must never appear in
-this repo; it lives outside the repo and is never committed, so `--release`
-mode is not something any other contributor can run, and it is not part of
-the CI gate itself.
+before every push. Those files live outside the repo and are never
+committed: the denylist names terms that must never appear here, and the
+results and ledger hold the review verdicts that `--release` binds to each
+entry's content hash. Release mode refuses to run without all three, so it is
+not something another contributor can run, and it is not part of the CI gate.
 
 ## Voice
 

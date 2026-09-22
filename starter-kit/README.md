@@ -11,10 +11,10 @@ it is specific to any one codebase; it is all working-style and plumbing.
 |---|---|
 | `AGENTS.md` | Tool-neutral working-style rules: when to keep going, when to stop and ask, what "done" means, how to delegate. |
 | `CLAUDE.md` | A one-line stub that points Claude Code at `AGENTS.md`, so the rules live in one place. |
-| `GEMINI.md` | The same stub pattern, for Gemini CLI. |
-| `agents/scout.md` | A subagent definition for Claude Code: read-only reconnaissance on a cheaper model. |
+| `GEMINI.md` | The same stub pattern for Gemini CLI, using its `@./AGENTS.md` import form. |
+| `agents/scout.md` | A subagent definition for Claude Code: read-only reconnaissance on a cheaper model. Read-only by instruction; drop Bash from its tool list if you need that enforced. |
 | `hooks/post-edit-lint.sh` | A hook, meaning a script the agent host runs automatically, that lints a file right after it is written or edited and prints findings without blocking. |
-| `settings.hooks.example.json` | The settings.json snippet that wires the hook (and a couple of others) into Claude Code. |
+| `settings.hooks.example.json` | The settings.json snippet that wires the lint hook into Claude Code. |
 | `memory-conventions.md` | The pattern I use for durable, cross-session memory files, and the rule for keeping them from going stale. |
 | `session-start-pattern.md` | The pattern for injecting useful context automatically at the start of a session. |
 
@@ -31,14 +31,18 @@ it is specific to any one codebase; it is all working-style and plumbing.
    and make it executable: `chmod +x ~/.claude/hooks/post-edit-lint.sh`.
 4. Merge the contents of `settings.hooks.example.json` into your
    `~/.claude/settings.json` under its `hooks` key. If you already have
-   other hooks configured, add these entries alongside them rather than
-   replacing the file.
+   other hooks configured, add this entry alongside them rather than
+   replacing the file. The session-start, pre-compaction, and session-end
+   hooks described in `session-start-pattern.md` are a pattern, not shipped
+   scripts; wire them only once you have written your own.
 
 ### Codex
 
 Codex reads `AGENTS.md` natively, so copying that file into a repository
-root is enough to get the working-style rules. The subagent definition, the
-hook, and the settings snippet are Claude Code specific and do not apply.
+root is enough to get the working-style rules. Codex has its own hook events
+(check its hooks documentation for the current names), so the session-start
+pattern applies there too once adapted; the subagent definition, the lint
+hook script, and the settings snippet here are Claude Code specific.
 
 ### Gemini CLI
 
