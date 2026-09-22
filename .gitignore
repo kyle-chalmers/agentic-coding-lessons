@@ -7,3 +7,4 @@ __pycache__/
 scratch/
 denylist*.txt
 ledger*.json
+.ruff_cache/

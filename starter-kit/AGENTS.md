@@ -37,8 +37,9 @@ invoked agent that a main agent can delegate a piece of work to.
   plainly what you did and what remains unverified. "I made the change; I
   have not re-run the test" is more useful than an unearned "Done!"
 - For data work specifically, a query that ran is not the same as a number
-  that reconciles. "Done" means a check exited 0, not that a command
-  produced output. If a golden fixture or reference file exists for the
+  that reconciles. "Done" means a check exited 0 and you looked at the
+  intended effect (the count, the file, the live state), because a zero exit
+  code alone only proves the wrapper did not raise. If a golden fixture or reference file exists for the
   task, run the comparison against it before calling the work finished.
 - Gate a merge on the actual CI check results, read programmatically (an
   API call or CLI command that returns pass or fail), not on a green badge

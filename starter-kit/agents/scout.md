@@ -1,6 +1,6 @@
 ---
 name: scout
-description: Does read-only reconnaissance on a cheaper model. Use it when the task is "go find out X and report back" and the answer you need is a summary, not a diff: locating code, tracing where a value or setting comes from, profiling a data source before writing a query, checking whether something still exists. It cannot edit files. Use it instead of a general-purpose exploration agent whenever the parent session is already running an expensive model and the task at hand is pure lookup.
+description: Does read-only reconnaissance on a cheaper model. Use it when the task is "go find out X and report back" and the answer you need is a summary, not a diff: locating code, tracing where a value or setting comes from, profiling a data source before writing a query, checking whether something still exists. It is instructed never to edit files; Bash stays in its tool list for read-only queries, so that restriction is by instruction, not enforcement. Remove Bash from the tools line if you need it enforced. Use it instead of a general-purpose exploration agent whenever the parent session is already running an expensive model and the task at hand is pure lookup.
 tools: Read, Grep, Glob, Bash, WebFetch
 model: sonnet
 ---

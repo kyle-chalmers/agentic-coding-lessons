@@ -11,6 +11,7 @@ import argparse
 import difflib
 import json
 import os
+import posixpath
 import re
 import sys
 
@@ -44,7 +45,7 @@ def render_links(e: dict, index: dict, from_path: str) -> str:
             parts.append(f"[{r['label']}]({r['url']})")
         else:
             tgt = index[r["lesson"]]
-            rel = os.path.relpath(tgt["path"], os.path.dirname(from_path)) if os.path.dirname(from_path) else tgt["path"]
+            rel = posixpath.relpath(tgt["path"], posixpath.dirname(from_path)) if posixpath.dirname(from_path) else tgt["path"]
             parts.append(f"[{r['lesson']}]({rel}#{tgt['anchor']})")
     return ", ".join(parts)
 

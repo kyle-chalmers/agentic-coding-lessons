@@ -16,7 +16,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 from canonical import content_hash, digest_hash  # noqa: E402
 
-DASHES = re.compile("[–—]")
+DASHES = re.compile("[\u2013\u2014]")
 
 
 def walk_strings(obj, path="$"):
@@ -30,12 +30,21 @@ def walk_strings(obj, path="$"):
             yield from walk_strings(v, f"{path}[{i}]")
 
 
+ABBREV = ("e.g", "i.e", "etc", "vs", "cf")
+
+
 def one_sentence(text: str) -> bool:
+    """Exactly one sentence: ends with a terminator, and no terminator followed by whitespace
+    appears inside it except after a known abbreviation. Digits are rejected outright because a
+    why must carry no counts or dates."""
     body = text.strip()
-    if not body.endswith((".", "!", "?")):
+    if not body.endswith((".", "!", "?")) or re.search(r"\d", body):
         return False
-    inner = body[:-1]
-    return not re.search(r"[.!?]\s+[A-Z]", inner)
+    for m in re.finditer(r"[.!?]\s+\S", body[:-1]):
+        before = body[:m.start()].rstrip().lower()
+        if not any(before.endswith(a) for a in ABBREV):
+            return False
+    return True
 
 
 def main() -> int:
@@ -71,7 +80,7 @@ def main() -> int:
         elif themes[e["theme"]]["tier"] != e.get("tier"):
             errors.append(f"{eid}: tier mismatch with theme {e['theme']}")
         if "why" in e and not one_sentence(e["why"]):
-            errors.append(f"{eid}: why must be exactly one sentence")
+            errors.append(f"{eid}: why must be exactly one sentence with no digits")
         if e.get("tool_scope") == "agent-agnostic" and e.get("other_agents"):
             errors.append(f"{eid}: other_agents not allowed on agent-agnostic lessons")
         if any("url" in r for r in e.get("related", [])) and not e.get("adds_beyond_docs"):

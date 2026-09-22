@@ -6,8 +6,11 @@ used here (objects, arrays, strings, integers, booleans): keys sorted, no whites
 non-ASCII left unescaped, UTF-8 encoded. Every writer, reviewer, reducer and verifier
 imports this module; nothing else may serialize an entry for hashing.
 
-content_hash covers the lesson itself. digest_hash covers only the README-digest
-fields, so adding or changing a digest blurb never invalidates lesson verdicts.
+content_hash covers the lesson text. digest_hash covers only the README-digest fields, so
+adding or changing a digest blurb never invalidates lesson verdicts. Neither hash includes
+the id on purpose: every verdict record carries the id it was written for (in its filename
+and its body), and the verifier matches on both id and hash, so a hash cannot be reused for
+a different lesson without that mismatch showing up.
 """
 from __future__ import annotations
 

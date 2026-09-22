@@ -10,8 +10,9 @@ Two layers:
      check can never pass by accident. Without --release the literal layer is skipped and
      only the structural layer runs (what CI can do).
 
-Matching is case-insensitive over NFKC-normalized, whitespace-collapsed text with
-zero-width characters removed. Exit 0 = clean, 1 = hits, 2 = usage error.
+Matching is case-insensitive over NFKC-normalized text with zero-width characters removed;
+multiword denylist terms are also matched over the whole file with all whitespace collapsed,
+so a term split across a line break is still caught. Exit 0 = clean, 1 = hits, 2 = usage error.
 """
 from __future__ import annotations
 
@@ -29,13 +30,13 @@ SAFE_KEY_PREFIXES = re.compile(
     r"^(SHA|UTF|ISO|RFC|AES|CVE|MD|HTTP|HTTPS|TLS|SSL|PEP|L|GPT|X|ID|UUID|OAUTH|ERR|E|W)-", re.I)
 
 STRUCTURAL = [
-    ("ticket-key", re.compile(r"\b[A-Z]{2,10}-\d{2,6}\b")),
+    ("ticket-key", re.compile(r"\b[A-Z]{2,12}-\d{1,6}\b")),
     ("dotted-upper-identifier", re.compile(r"\b[A-Z][A-Z0-9_]{2,}\.[A-Z][A-Z0-9_]{2,}(?:\.[A-Z][A-Z0-9_]{2,})?\b")),
     ("issue-tracker-url", re.compile(r"https?://[a-z0-9.-]*atlassian\.net\S*", re.I)),
     ("chat-archive-url", re.compile(r"https?://[a-z0-9.-]*slack\.com/archives\S*", re.I)),
     ("cloud-drive-url", re.compile(r"https?://(drive|docs)\.google\.com\S*", re.I)),
     ("email-address", re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")),
-    ("home-path", re.compile(r"/(?:Users|home)/[A-Za-z0-9._-]+/")),
+    ("home-path", re.compile(r"/(?:Users|home)/[A-Za-z0-9._-]+/|[A-Za-z]:\\\\Users\\\\")),
 ]
 SAFE_EMAILS = re.compile(r"(users\.noreply\.github\.com|noreply@anthropic\.com|example\.com)$", re.I)
 ZERO_WIDTH = re.compile(r"[​‌‍⁠﻿]")
@@ -95,6 +96,19 @@ def scan_file(path: str, terms, release: bool) -> list[str]:
             for t, pat in terms:
                 if pat.search(low):
                     hits.append(f"{path}:{lineno}:denylist:{t}")
+    if release and terms:
+        # multiword terms can straddle a line break: scan the whole file with newlines collapsed too
+        flat = re.sub(r"\s+", " ", normalize(raw)).lower()
+        line_starts = [0]
+        for i, ch in enumerate(normalize(raw)):
+            if ch == "\n":
+                line_starts.append(i + 1)
+        for t, pat in terms:
+            if " " in t:
+                for m in pat.finditer(flat):
+                    if not any(h.endswith(f":denylist:{t}") for h in hits):
+                        hits.append(f"{path}:~:denylist:{t} (multiline)")
+                    break
     return hits
 
 
